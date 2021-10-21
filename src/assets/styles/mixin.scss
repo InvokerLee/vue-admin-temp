@@ -1,0 +1,76 @@
+@mixin clearfix {
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+@mixin scrollBar {
+  &::-webkit-scrollbar-track-piece {
+    background: #d3dce6;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #99a9bf;
+    border-radius: 20px;
+  }
+}
+
+@mixin relative {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+
+/**
+* 字体大小
+* 使用: class="font-16"
+*/
+@mixin setFontSizeClass {
+  @for $i from 12 through 32 {
+    .font-#{$i} {
+      font-size: #{$i}px !important;
+    }
+  }
+}
+
+/**
+* paddding and margin
+* 使用: class="pl-4 ml-4"
+*/
+$basePx: 4;
+@mixin setBoxModelClass {
+  @for $i from 0 through 10 {
+    .pl-#{$i} {
+      padding-left: #{$i * $basePx}px;
+    }
+    .pr-#{$i} {
+      padding-right: #{$i * $basePx}px;
+    }
+    .px-#{$i} {
+      padding: 0px #{$i * $basePx}px;
+    }
+    .py-#{$i} {
+      padding: #{$i * $basePx}px 0px;
+    }
+
+    .ml-#{$i} {
+      margin-left: #{$i * $basePx}px;
+    }
+    .mr-#{$i} {
+      margin-right: #{$i * $basePx}px;
+    }
+    .mx-#{$i} {
+      margin: 0px #{$i * $basePx}px;
+    }
+    .my-#{$i} {
+      margin: #{$i * $basePx}px 0px;
+    }
+  }
+}

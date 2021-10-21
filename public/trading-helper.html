@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>shopping cart fast clipper</title>
+    <style>
+        textarea {
+            width: 45%;
+            height: 500px;
+        }
+    </style>
+    <script>
+        function convert() {
+            var data = document.getElementById("txt_src").value;
+            var lines = data.split('\n');
+            var result = [];
+
+            var pureNumber = function (num) {
+                return num.replace(/[^0-9.]/gm, "");
+            }
+            
+            var cvt_arrow_cart = function () {
+                result.push(["product number", "brand", "quantity", "price", "amount"].join('\t'));
+                var pn, brand, price, amount, quantity;
+
+                for (var line in lines) {
+                    line = parseInt(line);
+                    if (line < lines.length - 6 && lines[line].trim() == '') {
+                        try {
+                            pn = lines[line + 1].trim();
+                            brand = lines[line + 2].trim();
+                            price = undefined;
+                            for (let i = 4; i < 10; i++) {
+                                var priceMatches = /(\$[\d\.]+)Price:\s*$/.exec(lines[line + i].trim());
+                                if (priceMatches) {
+                                    price = `${priceMatches[1]}(${lines[line + i + 1]})`;
+                                }
+
+                                var quantityMatches = /^Quantity:\s+(\d+)/.exec(lines[line + i].trim());
+                                if (quantityMatches) {
+                                    quantity = quantityMatches[1];
+                                }
+
+                                var amountMatches = /(\$[\d\.]+)Total:\s*$/.exec(lines[line + i].trim());
+                                if (amountMatches) {
+                                    amount = `${amountMatches[1]}(${lines[line + i + 1]})`;
+                                }
+                            }
+
+                            if (price !== undefined) {
+                                result.push([pn, brand, quantity, price, amount].join('\t'));
+                            }
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    }
+                }
+            }
+
+            var cvt_arrow_new = function () {
+                result.push(["product number", "stock"].join('\t'));
+                var pn, stock;
+                var state = 0;
+
+                for (var line in lines) {
+                    line = parseInt(line);
+                    switch (state) {
+                        case 0:
+                            if (/NEW!/.test(lines[line])) {
+                                state = 1;
+                            }
+                            break;
+                        case 1:
+                            pn = lines[line];
+                            state = 2;
+                            break;
+                        case 2:
+                            if (/^[\d,]+$/.test(lines[line])) {
+                                stock = lines[line].replace(',', '');
+                                result.push([pn, stock].join('\t'));
+                                state = 0;
+                            } else if (/NEW!/.test(lines[line])) {
+                                stock = 0;
+                                result.push([pn, stock].join('\t'));
+                                state = 1;
+                            }
+                            break;
+                    }
+                }
+
+                if (state === 2) {
+                    stock = 0;
+                    result.push([pn, stock].join('\t'));
+                }
+            }
+
+            var cvt_mouser_cart = function () {
+                result.push(["lcsc number", "product number", "brand", "quantity", "price", "amount"].join('\t'));
+                var lcsc, pn, brand, price, amount, quantity;
+                var state = 0;
+
+                for (var lineNumber in lines) {
+                    lineNumber = parseInt(lineNumber);
+                    line = lines[lineNumber].trim();
+                    switch (state) {
+                        case 0: // unknow
+                            if (/Mouser编号：.*/.test(line)) {
+                                state = 7;
+                            }
+                            break;
+                        case 7: // wait for mouser product number
+                            var matches = /^制造商编号：\s*(.+)/.exec(line);
+                            if (matches) {
+                                pn = matches[1];
+                                state = 8;
+                            }
+                            break;
+                        case 8:
+                            var matches = /^制造商:\s*(.+)/.exec(line);
+                            if (matches) {
+                                brand = matches[1];
+                                state = 12;
+                            }
+                            break;
+                        case 12:
+                            var matches = /^客户编号:/.exec(line);
+                            if (matches) {
+                                lcsc = lines[lineNumber + 1];
+                                state = 9;
+                            }
+                            break;
+                            break;
+                        case 9:
+                            var matches = /^(\d+)$/.exec(line);
+                            if (matches) {
+                                quantity = matches[1];
+                                state = 10;
+                            }
+                            break;
+                        case 10:
+                            var matches = /^[￥¥$]([\d\.]+)/.exec(line);
+                            if (matches) {
+                                price = matches[1];
+                                state = 11;
+                            }
+                            break;
+                        case 11:
+                            var matches = /^[￥¥$]([\d\.]+)/.exec(line);
+                            if (matches) {
+                                amount = matches[1];
+                                result.push([lcsc, pn, brand, quantity, price, amount].join('\t'));
+                                state = 7;
+                            }
+                            break;
+                    }
+                }
+            }
+
+            var cvt_mouser_en_cart = function () {
+                result.push(["lcsc number", "product number", "brand", "quantity", "price", "amount"].join('\t'));
+                var lcsc, pn, brand, price, amount, quantity;
+                var state = 0;
+
+                for (var lineNumber in lines) {
+                    lineNumber = parseInt(lineNumber);
+                    line = lines[lineNumber].trim();
+                    switch (state) {
+                        case 0: // unknow
+                            if (/Mouser No:\s*.*/.test(line)) {
+                                state = 7;
+                            }
+                            break;
+                        case 7: // wait for mouser product number
+                            var matches = /^Mfr. No:\s*(.+)/.exec(line);
+                            if (matches) {
+                                pn = matches[1];
+                                state = 8;
+                            }
+                            break;
+                        case 8:
+                            var matches = /^Mfr.:\s*(.+)/.exec(line);
+                            if (matches) {
+                                brand = matches[1];
+                                state = 12;
+                            }
+                            break;
+                        case 12:
+                            var matches = /^Customer No:/.exec(line);
+                            if (matches) {
+                                lcsc = lines[lineNumber + 1];
+                                state = 9;
+                            }
+                            break;
+                            break;
+                        case 9:
+                            var matches = /^(\d+)$/.exec(line);
+                            if (matches) {
+                                quantity = matches[1];
+                                state = 10;
+                            }
+                            break;
+                        case 10:
+                            var matches = /^[￥¥$]([\d\.]+)/.exec(line);
+                            if (matches) {
+                                price = matches[1];
+                                state = 11;
+                            }
+                            break;
+                        case 11:
+                            var matches = /^[￥¥$]([\d\.]+)/.exec(line);
+                            if (matches) {
+                                amount = matches[1];
+                                result.push([lcsc, pn, brand, quantity, price, amount].join('\t'));
+                                state = 7;
+                            }
+                            break;
+                    }
+                }
+            }
+
+            var cvt_mouser_en_history = function () {
+                result.push(["product number", "mouser number", "quantity", "price", "amount", "status", "date"].join('\t'));
+                var pn, mn, price, amount, quantity, status, date;
+                var state = 0;
+
+                for (var line in lines) {
+                    line = lines[line].trim();
+                    switch (state) {
+                        case 0: // unknow
+                            var matches = /^Mouser No:\s+(.+)/.exec(line);
+                            if (matches) {
+                                mn = matches[1];
+                                state = 7;
+                            }
+                            break;
+                        case 7: // wait for mouser product number
+                            var matches = /^Mfr. No:\s+(.+)/.exec(line);
+                            if (matches) {
+                                pn = matches[1];
+                                state = 8;
+                            }
+                            break;
+                        case 8:
+                            // 说明
+                            state = 9;
+                            break;
+                        case 9:
+                            var matches = /(\d+)\s+\$([\d\.]+)\s+\$([\d\.]+)/.exec(line);
+                            if (matches) {
+                                quantity = matches[1];
+                                price = matches[2];
+                                amount = matches[3];
+                                state = 10;
+                            }
+                            break;
+                        case 10:
+                            var matches = /(.*?)\t(.*?)\t/.exec(line);
+                            if (matches) {
+                                status = matches[1];
+                                date = matches[2];
+                                result.push([pn, mn, quantity, price, amount, status, date].join('\t'));
+                                state = 0;
+                            }
+                            break;
+                    }
+                }
+            }
+
+            var cvt_mouser_history = function () {
+                result.push(["product number", "mouser number", "quantity", "price", "amount"].join('\t'));
+                var pn, mn, price, amount, quantity;
+                var state = 0;
+
+                for (var line in lines) {
+                    line = lines[line].trim();
+                    switch (state) {
+                        case 0: // unknow
+                            var matches = /^Mouser编号：\s+(.+)/.exec(line);
+                            if (matches) {
+                                mn = matches[1];
+                                state = 7;
+                            }
+                            break;
+                        case 7: // wait for mouser product number
+                            var matches = /^制造商编号：\s+(.+)/.exec(line);
+                            if (matches) {
+                                pn = matches[1];
+                                state = 8;
+                            }
+                            break;
+                        case 8:
+                            // 说明
+                            state = 9;
+                            break;
+                        case 9:
+                            var matches = /(\d+)\s+¥([\d\.]+)\s+¥([\d\.]+)/.exec(line);
+                            if (matches) {
+                                quantity = matches[1];
+                                price = matches[2];
+                                amount = matches[3];
+                                result.push([pn, mn, quantity, price, amount].join('\t'));
+                                state = 0;
+                            }
+                            break;
+                    }
+                }
+            }
+
+            var cvt_arrow_his = function () {
+                result.push(["product number", "brand", "quantity", "price", "amount"].join('\t'));
+                var pn, brand, price, amount, quantity;
+
+                for (var line in lines) {
+                    line = parseInt(line);
+                    if (line < lines.length - 4 && lines[line].trim() == '') {
+                        pn = lines[line + 1].trim();
+                        brand = lines[line + 2].trim();
+
+                        var priceMatches = /^Price:\s+\$([\d\.]+)/.exec(lines[line + 5].trim());
+                        if (priceMatches) {
+                            price = priceMatches[1];
+                        } else {
+                            continue;
+                        }
+
+                        var quantityMatches = /^Quantity:\s+(\d+)/.exec(lines[line + 6].trim());
+                        if (quantityMatches) {
+                            quantity = quantityMatches[1];
+                        } else {
+                            continue;
+                        }
+
+                        var amountMatches = /^Total:\s+\$([\d\.]+)/.exec(lines[line + 7].trim());
+                        if (amountMatches) {
+                            amount = amountMatches[1];
+                        } else {
+                            continue;
+                        }
+
+                        result.push([pn, brand, quantity, price, amount].join('\t'));
+                    }
+                }
+            }
+
+            var cvt_digikey_cart = function () {
+                result.push(["lcsc number", "product number", "brand", "quantity", "price", "amount"].join('\t'));
+                var lcscpn, pn, brand, price, amount, quantity;
+                var index = 1;
+                lines = data.split(/\n|\t/);
+                var filter = -1;
+
+                for (var line in lines) {
+                    line = parseInt(line);
+                    if (line > filter && parseInt(lines[line]) === index) {
+                        quantity = parseInt(pureNumber(lines[line + 8]));
+                        if (isNaN(quantity)) {
+                            quantity = parseInt(pureNumber(lines[line + 9]));
+                        }
+                        pn = lines[line + 4];
+                        brand = lines[line + 5];
+                        lcscpn = lines[line + 7];
+                        var off = 0;
+                        for (var i = 8; i < 13; i++) {
+                            if (/^\$.*/.test(lines[line + i])) {
+                                off = i;
+                                break;
+                            }
+                        }
+                        price = lines[line + off - 1];
+                        amount = lines[line + off];
+                        filter = line + off;
+
+                        result.push([lcscpn, pn, brand, quantity, pureNumber(price), pureNumber(amount)].join('\t'));
+
+                        index++;
+                    }
+                }
+            }
+
+            var cvt_cogobuy_list = function () {
+                var state = 0;
+
+                for (var line in lines) {
+                    line = lines[parseInt(line)].trim();
+                    switch (state) {
+                        case 0:
+                            if (/^型号\t/.test(line)) {
+                                result.push(line);
+                                state = 1;
+                            }
+                            break;
+                        case 1:
+                            if (/^显示\s*\d+条/.test(line)) {
+                                return;
+                            } else {
+                                result.push(line);
+                            }
+                            break;
+                    }
+                }
+            }
+
+            var cvt_mouser_invoice = function () {
+                lines = data.split(/\n|\t/);
+
+                result.push(["index", "product number", "quantity", "price", "amount"].join('\t'));
+                var pn, price, amount, quantity;
+                var index = 1;
+                var state = 0;
+
+                for (var line in lines) {
+                    line = parseInt(line);
+                    switch (state) {
+                        case 0:
+                            if (lines[line] === "") {
+                                state = 1;
+                            }
+                            break;
+                        case 1:
+                            if (lines[line] === index.toString()) {
+                                state = 2;
+                            } else {
+                                state = 0;
+                            }
+                            break;
+                        case 2:
+                            pn = lines[line + 3];
+                            state = 3;
+                            break;
+                        case 3:
+                            if (/^\d+$/.test(lines[line])) {
+                                quantity = lines[line];
+                                price = lines[line + 1];
+                                amount = lines[line + 2];
+                                result.push([index, pn, quantity, price, amount].join('\t'));
+                                console.log([index, pn, quantity, price, amount]);
+                                index++;
+                                state = 0;
+                            }
+                            break;
+                    }
+                }
+            }
+
+            var cvt_excel_to_csv = function () {
+                for (var line in lines) {
+                    var row = lines[line].split('\t').join(',');
+                    if (row !== '') {
+                        result.push(row);
+                    }
+                }
+            }
+
+            var cvt_verical_cart = function () {
+                result.push(["product name", "brand", "quantity", "price", "amount"].join('\t'));
+
+                var state = 0;
+                var index = 0;
+                var name, brand, quantity, price, amount;
+
+                for (var line of lines) {
+                    switch (state) {
+                        case 0: // unknown
+                            if (/Remove All/.test(line)) {
+                                state = 1;
+                            }
+                            break;
+                        case 1: // running
+                            if (index === 1) {
+                                name = line;
+                            } else if (index === 2) {
+                                brand = line;
+                            } else {
+                                var reQty = /Quantity: (\d+)/.exec(line);
+                                if (reQty !== null) {
+                                    quantity = reQty[1];
+                                }
+
+                                var rePrice = /Price: \$(.*)/.exec(line);
+                                if (rePrice !== null) {
+                                    price = rePrice[1];
+                                }
+
+                                var reAmount = /Item Total: \$(.*)/.exec(line);
+                                if (reAmount !== null) {
+                                    amount = reAmount[1];
+                                }
+
+                                if (/Remove/.test(line)) {
+                                    result.push([name, brand, quantity, price, amount].join('\t'));
+                                    index = -1;
+                                }
+                            }
+                            index++;
+                            break;
+                    }
+                }
+            }
+
+            var cvt_ti_cart = function () {
+                result.push(["product name", "lcsc No.", "quantity", "price", "amount"].join('\t'));
+
+                var state = 0;
+                var name, lcscno, quantity, price, amount;
+
+                for (var i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    switch (state) {
+                        case 0: // unknown
+                            if (/产品\t包装数量/.test(line)) {
+                                state = 1;
+                            }
+                            break;
+                        case 1: // product name
+                            if (line.trim().length > 0) {
+                                state = 2;
+                                name = line.trim()
+                            }
+                            break;
+                        case 2: // lcscno & quantity
+                            if (/客户参考零件号/.test(line)) {
+                                lcscno = lines[i + 1];
+                                quantity = lines[i + 4];
+                                state = 3;
+                            }
+                            break;
+                        case 3: // others
+                            if (/^(优惠券代码|)$/.test(line.trim())) {
+                                price = lines[i - 2].substring(1);
+                                amount = lines[i - 1].substring(1);
+                                result.push([name, lcscno, quantity, price, amount].join('\t'))
+                                state = 1;
+                            }
+                            break;
+                    }
+                }
+            }
+
+            for (var line in lines) {
+                line = lines[line].trim();
+                if (/\d+ items in your cart/.test(line)) {
+                    cvt_arrow_cart();
+                    break;
+                } else if (/NEW!/.test(line)) {
+                    cvt_arrow_new();
+                    break;
+                } else if (/Mouser编号\/制造商编号/.test(line)) {
+                    cvt_mouser_cart();
+                    break;
+                } else if (/Mouser No \/ Mfr. No/.test(line)) {
+                    cvt_mouser_en_cart();
+                    break;
+                } else if (/网络订单编号：/.test(line)) {
+                    cvt_mouser_history();
+                    break;
+                } else if (/Web Order No:/.test(line)) {
+                    cvt_mouser_en_history();
+                    break;
+                } else if (/CPN:.*/.test(line)) {
+                    cvt_arrow_his();
+                    break;
+                } else if (/.*Digi-Key.*/.test(line)) {
+                    cvt_digikey_cart();
+                    break;
+                } else if (/.*预计发货日期将在收到付款时告知.*/.test(line)) {
+                    cvt_mouser_invoice();
+                    break;
+                } else if (/.*\t.*/.test(line)) {
+                    cvt_excel_to_csv();
+                    break;
+                } else if (/科通芯城/.test(line)) {
+                    cvt_cogobuy_list();
+                    break;
+                } else if (/.*Verical Electronic.*/.test(line)) {
+                    cvt_verical_cart();
+                    break;
+                } else if (/^Texas Instruments$/.test(line)) {
+                    cvt_ti_cart();
+                    break;
+                }
+            }
+            console.log(result);
+            document.getElementById("txt_target").value = result.join("\n");
+            return false;
+        }
+    </script>
+
+    <head>
+
+    <body>
+        <textarea id="txt_src" oninput="convert()"></textarea>
+        <span>&gt;</span>
+        <textarea id="txt_target" readonly></textarea>
+    </body>
+
+</html>
