@@ -23,7 +23,7 @@ export default {
     handleScroll(e) {
       const eventDelta = e.wheelDelta || -e.deltaY * 40;
       const $scrollWrapper = this.scrollWrapper;
-      $scrollWrapper.scrollLeft = $scrollWrapper.scrollLeft + eventDelta / 4;
+      $scrollWrapper.scrollLeft = $scrollWrapper.scrollLeft + (eventDelta / 4);
     },
     moveToTarget(currentTag) {
       const $container = this.$refs.scrollContainer.$el;

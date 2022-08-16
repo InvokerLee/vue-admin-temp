@@ -1,13 +1,7 @@
-import baseWrapper from './baseWrapper';
+import BaseWrapper from './BaseWrapper';
 import aTable from './aTable';
-import commonTable from './commonTable';
-import commonPagination from './commonPagination';
-import commonPopover from './commonPopover';
 
 export default {
-  baseWrapper,
+  BaseWrapper,
   aTable,
-  commonTable,
-  commonPagination,
-  commonPopover,
 };

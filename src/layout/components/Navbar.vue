@@ -2,17 +2,11 @@
   <div class="navbar">
     <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
 
-    <div class="fattipswrap" v-loading="tipsLoading">
-      <div class="fattipsbox">
-        {{ env }}
-      </div>
-    </div>
-
     <div class="right-menu">
       <div class="right-menu-item">
         <el-dropdown size="medium" :show-timeout="100" trigger="click">
           <div class="realname">
-            {{ realname }}
+            {{ realname || 'Login in' }}
             <i class="el-icon-caret-bottom" />
           </div>
           <el-dropdown-menu slot="dropdown">
@@ -33,24 +27,13 @@ export default {
     Hamburger,
   },
   data() {
-    return {
-      env: process.env.VUE_APP_ENV,
-      tipsLoading: false,
-      tipsObj: {
-        num1: 0,
-        num2: 0,
-        user: [],
-      },
-    };
+    return {};
   },
   computed: {
     ...mapGetters([
       'sidebar',
       'realname',
     ]),
-  },
-  created() {
-    this.alreadyChange();
   },
   methods: {
     toggleSideBar() {
@@ -62,11 +45,6 @@ export default {
       loading.close();
       this.$router.push('/login');
     },
-
-    // 已交付版本
-    alreadyChange(v) {
-    },
-
   },
 };
 </script>
@@ -91,30 +69,6 @@ export default {
 
     &:hover {
       background: rgba(0, 0, 0, .025)
-    }
-  }
-
-  .fattipswrap{
-    flex: auto;
-    display: flex;
-    height: 46px;
-    font-size: 14px;
-    padding: 0 15px;
-    .fattipsbox{
-      flex: auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      .bg{
-        min-width: 150px;
-        flex: auto;
-        align-self: stretch;
-        display: flex;
-        align-items: center;
-        background: #f56c6c;
-        padding: 0 15px;
-        margin-right: 15px;
-      }
     }
   }
 

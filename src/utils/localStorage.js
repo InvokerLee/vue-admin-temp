@@ -1,4 +1,4 @@
-const prefix = '__LCSC__';
+const prefix = '__VUE__';
 
 export default {
   /**

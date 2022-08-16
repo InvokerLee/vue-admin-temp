@@ -18,11 +18,13 @@ const Modal = function({ props, component, componentProps, on }) {
         visible: true,
       };
     },
+    beforeDestroy() {
+      this.$el.parentNode.removeChild(this.$el);
+    },
     methods: {
       close() {
         this.visible = false;
         this.$destroy();
-        this.$el.parentNode.removeChild(this.$el);
       },
     },
     render(createElement) {
