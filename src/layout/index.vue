@@ -35,7 +35,7 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('app/getConsts');
+    // this.$store.dispatch('app/getConsts');
   },
 };
 </script>

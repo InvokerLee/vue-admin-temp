@@ -9,7 +9,7 @@
     >
       <div class="title-container">
         <h3 class="title">
-          立创商城外贸ERP
+          Vue-template-admin
         </h3>
       </div>
       <!-- 用户名输入框 -->
@@ -26,9 +26,6 @@
           v-model="loginForm.password"
           @keyup.enter.native="handleLogin"
         />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="text" @click="showDialog">绑定网卡用户选项</el-button>
       </el-form-item>
       <el-button
         class="login-btn"
@@ -66,11 +63,6 @@ export default {
       },
       loading: false,
       redirect: undefined,
-      macAddressDialog: {
-        show: false,
-        isPluginInstalled: false,
-        macAddressList: [],
-      },
     };
   },
   watch: {
@@ -82,18 +74,9 @@ export default {
     },
   },
   methods: {
-    showDialog() {
-      this.macAddressDialog.show = true;
-    },
-    closeDialogMacAddress() {
-      this.macAddressDialog.show = false;
-    },
     handleLogin() {
       this.$refs.accountForm.validate(valid => {
         if (!valid) return;
-        if (this.macAddressDialog.isPluginInstalled) { // mac地址验证
-          this.loginForm.mac_address = this.macAddressDialog.macAddressList;
-        }
         this.login();
       });
     },

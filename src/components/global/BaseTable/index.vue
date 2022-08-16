@@ -1,7 +1,3 @@
-/*
- * 简化改编自 lb-table
- */
-
 <template>
   <div>
     <el-table

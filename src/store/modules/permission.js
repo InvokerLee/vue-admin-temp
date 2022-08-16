@@ -57,7 +57,8 @@ const mutations = {
 const actions = {
   generateRoutes({ commit }, permissionList) {
     return new Promise(resolve => {
-      const accessedRoutes = filterAsyncRoutes(asyncRoutes, permissionList);
+      // const accessedRoutes = filterAsyncRoutes(asyncRoutes, permissionList);
+      const accessedRoutes = asyncRoutes; // *****测试代码*****
       // 没匹配到路由就转入首页
       accessedRoutes.push({
         path: '*',

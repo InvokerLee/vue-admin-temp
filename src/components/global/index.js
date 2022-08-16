@@ -1,7 +1,7 @@
 import BaseWrapper from './BaseWrapper';
-import aTable from './aTable';
+import BaseTable from './BaseTable';
 
 export default {
   BaseWrapper,
-  aTable,
+  BaseTable,
 };
