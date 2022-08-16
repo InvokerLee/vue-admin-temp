@@ -2,13 +2,13 @@
   <div>
     <div>dashboard</div>
 
-    <aTable
+    <BaseTable
       autoHeight
       :loading="tableData.loading"
       :column="tableData.column"
       :data="tableData.data"
     >
-    </aTable>
+    </BaseTable>
     <!--
       pagination
       :current-page.sync="params.page"
@@ -53,7 +53,7 @@ export default {
             prop: 'bb',
             label: '厂商/品牌',
             renderHeader: (h, scope) => {
-              return <span>{ scope.column.label }</span>;
+              return <span class='font-20'>{ scope.column.label }</span>;
             },
             render: (h, scope) => {
               return <span class='font-20'>{ scope.row.bb }</span>;

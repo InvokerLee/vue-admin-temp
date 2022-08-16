@@ -9,7 +9,6 @@
     :width="column.width"
     :min-width="column.minWidth"
     :fixed="column.fixed"
-    :render-header="column.renderHeader"
     :sortable="column.sortable || false"
     :sort-method="column.sortMethod"
     :sort-by="column.sortBy"
